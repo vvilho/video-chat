@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import io from "socket.io-client";
+import {Typography} from "@material-ui/core";
+
 
 const Room = (props) => {
     const userVideo = useRef();
@@ -10,14 +12,12 @@ const Room = (props) => {
     const userStream = useRef();
 
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(stream => {
+        navigator.mediaDevices?.getUserMedia({ audio: true, video: true }).then(stream => {
             userVideo.current.srcObject = stream;
             userStream.current = stream;
 
-
             socketRef.current = io.connect("/");
             socketRef.current.emit("join room", props.match.params.roomID);
-
 
             socketRef.current.on('other user', userID => {
                 callUser(userID);
@@ -28,7 +28,7 @@ const Room = (props) => {
                 otherUser.current = userID;
             });
 
-            socketRef.current.on ("offer", handleRecieveCall);
+            socketRef.current.on("offer", handleRecieveCall);
 
             socketRef.current.on("answer", handleAnswer);
 
@@ -63,12 +63,9 @@ const Room = (props) => {
         return peer;
     }
 
-
-
     function handleNegotiationNeededEvent(userID) {
         peerRef.current.createOffer().then(offer => {
             return peerRef.current.setLocalDescription(offer);
-
         }).then(() => {
             const payload = {
                 target: userID,
@@ -79,11 +76,9 @@ const Room = (props) => {
         }).catch(e => console.log(e));
     }
 
-
     function handleRecieveCall(incoming) {
         peerRef.current = createPeer();
         const desc = new RTCSessionDescription(incoming.sdp);
-
         peerRef.current.setRemoteDescription(desc).then(() => {
             userStream.current.getTracks().forEach(track => peerRef.current.addTrack(track, userStream.current));
         }).then(() => {
@@ -105,11 +100,11 @@ const Room = (props) => {
         peerRef.current.setRemoteDescription(desc).catch(e => console.log(e));
     }
 
-    function handleICECandidateEvent(event) {
-        if (event.candidate) {
+    function handleICECandidateEvent(e) {
+        if (e.candidate) {
             const payload = {
                 target: otherUser.current,
-                candidate: event.candidate,
+                candidate: e.candidate,
             }
             socketRef.current.emit("ice-candidate", payload);
         }
@@ -122,14 +117,21 @@ const Room = (props) => {
             .catch(e => console.log(e));
     }
 
-    function handleTrackEvent(event) {
-        partnerVideo.current.srcObject = event.streams[0];
+    function handleTrackEvent(e) {
+        partnerVideo.current.srcObject = e.streams[0];
     };
 
     return (
         <div>
-            <video autoPlay ref={ userVideo } />
-            <video autoPlay ref={ partnerVideo } />
+            <div>
+                <Typography>Oma video</Typography>
+            <video autoPlay ref={userVideo} />
+            </div>
+
+            <div>
+                <Typography>Kaverin video</Typography>
+                <video autoPlay ref={partnerVideo} />
+            </div>
         </div>
     );
 };

@@ -1,5 +1,7 @@
 import React from "react";
 import { v1 as uuid } from "uuid";
+import Button from '@material-ui/core/Button';
+
 
 
 const CreateRoom = (props) => {
@@ -8,7 +10,12 @@ const CreateRoom = (props) => {
         props.history.push(`/room/${id}`);
     }
     return (
-        <button onClick={create}>Create Room</button>
+        <Button
+            onClick={create}
+            variant={"contained"}
+            size={"large"}
+        >Create Room
+        </Button>
     );
 }
 
